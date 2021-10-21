@@ -13,16 +13,18 @@
 class Wave {
   // setting the co-ordinates, radius and the
   // speed of a particle in both the co-ordinates axes.
-  constructor(amplitude, frequency, lambda) {
+  constructor(amplitude, frequency, lambda, color, weight) {
     this.amplitude = amplitude;
-    this.celerity = frequency;
+    this.frequency = frequency;
     this.lambda = lambda;
+    this.color = color;
+    this.weight = weight;
     this._init__phases();
   }
 
   _init__phases() {
     this.phases = [];
-    const nbOfSamples = floor(width / resolution);
+    const nbOfSamples = floor(width / RESOLUTION) + 1;
 
     for (let i = 0; i < nbOfSamples; i++) {
       this.phases[i] = map(i, 0, nbOfSamples, 0, TWO_PI / this.lambda);
@@ -31,8 +33,8 @@ class Wave {
 
   draw() {
     noFill();
-    stroke(252, 238, 33);
-    strokeWeight(4);
+    stroke(this.color);
+    strokeWeight(this.weight);
     beginShape();
     for (let i = 0; i < this.phases.length; i++) {
       const y = map(sin(this.phases[i]), -1, 1, -this.amplitude, this.amplitude);
@@ -40,49 +42,53 @@ class Wave {
       // line(x, 0, x, y);
       // circle(x, y, dx * 2);
       vertex(x, y);
-      console.log(y);
       // console.log(y);
-      this.phases[i] += 0.02;
+      this.phases[i] += this.frequency * 0.02;
     }
     endShape();
   }
 }
 
-let angles = [];
-let angleV = [];
-const resolution = 2;
-const lambda = 6;
-let samples;
+const MAX_AMPLITUDE = 50;
+const MIN_AMPLITUDE = 10;
+const NB_OF_WAVES = 100;
+const RESOLUTION = 2;
+
 let waves = [];
+
+const _random = {
+  amplitude: () => {
+    return random(MIN_AMPLITUDE, MAX_AMPLITUDE);
+  },
+  frequency: () => {
+    return random(1, 5);
+  },
+  lambda: () => {
+    return random(1, 2);
+  },
+  color: () => {
+    r = random(255); // r is a random number between 0 - 255
+    g = random(255); // g is a random number betwen 100 - 200
+    b = random(255); // b is a random number between 0 - 100
+    a = random(50, 150); // a is a random number between 200 - 255
+    return color(r, g, b, a);
+  },
+  weight: () => {
+    return random(1, 4);
+  },
+};
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  let total = floor(width / resolution);
-  let samples = floor(width / resolution);
-  waves[0] = new Wave(100, 5, 1);
-  for (let i = 0; i < total + 1; i++) {
-    angles[i] = map(i, 0, total, 0, lambda * TWO_PI);
-    // angleV[i] = 0.01 + i / 100;
+  for (let i = 0; i < NB_OF_WAVES; i++) {
+    waves[i] = new Wave(_random.amplitude(), _random.frequency(), _random.lambda(), _random.color(), _random.weight());
   }
 }
 
 function draw() {
   background(0);
   translate(width / 2, height / 2);
-  // fill(252, 238, 33);
-  waves[0].draw();
-  // noFill();
-  // stroke(252, 238, 33);
-  // beginShape();
-  // for (let i = 0; i < angles.length; i++) {
-  //   let y = map(sin(angles[i]), -1, 1, -10, 10);
-  //   strokeWeight(4);
-  //   let x = map(i, 0, angles.length, -width / 2, width / 2);
-  //   // line(x, 0, x, y);
-  //   // circle(x, y, dx * 2);
-  //   vertex(x, y);
-  //   angles[i] += 0.5;
-  //   // angles[i] += angleV[i];
-  // }
-  // endShape();
+  for (let i = 0; i < NB_OF_WAVES; i++) {
+    waves[i].draw();
+  }
 }
